@@ -27,3 +27,15 @@ struct String :Value,std::string
 	using std::string::string;
 };
 
+struct array :Value //std::vector<Value *>
+{
+	std::vector <Value*> Value;
+	
+	//~array()
+	//{
+		//for (Value:: this*)
+		//{
+			//delete this;
+		//}
+	
+};
