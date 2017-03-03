@@ -1,6 +1,7 @@
 
 //#include <string>
 #include <vector>
+#include <cctype>
 
 struct Value 
 {
@@ -39,3 +40,10 @@ struct array :Value //std::vector<Value *>
 		//}
 	
 };
+Value * Parce(char * & First, char * Last)
+{
+	while (First != Last && std::isspace(*First))
+		++First;
+
+
+}
