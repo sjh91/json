@@ -1,7 +1,7 @@
 // json.cpp : Defines the entry point for the console application.
 //
 
-//#include "stdafx.h"
+#include "stdafx.h"
 //#include "json.h"
 #include <cctype>
 #include <string>
@@ -58,33 +58,79 @@ struct Number :Value
 
 	virtual void parse(std::string::iterator  & First, std::vector<std::unique_ptr<Value>> &v, int & weight)
 	{
-		char number;
+		Number x;
 		while (isdigit(*First))
 		{
-
-
+			x.Num = *First;
+			++First;
+			if (*First == '.')
+			{
+				++First;
+			}
 		}
+
+
+		double temp = v.size() + 1;
+		v.resize(temp);
+		v[temp].reset(new Number());
+		++weight;
 	}
+
 };
 
 struct String :Value, std::string
 {
 	using std::string::string;
+	virtual void parse(std::string::iterator  & First, std::vector<std::unique_ptr<Value>> &v, int & weight)
+	{
+		String text;
+		while (*First != '\"')
+		{
+			text += *First;
+			++First;
+		}
+
+
+		int temp = v.size() + 1;
+		v.resize(temp);
+		v[temp].reset(new String());
+		++weight;
+	}
+
+
 };
 
-struct array :Value //std::vector<Value *>
+struct Array : Value, std::vector<Value *>
 {
-	std::vector <Value*> Value;
+	Array() = default;
+	~Array()
+	{
+		for (Value * v : *this)
+			delete this;
+	}
+	virtual void parse(std::string::iterator  & First, std::vector<std::unique_ptr<Value>> &v, int & weight)
+	{
+		++First;
+		Array * a = new Array();
+		while (*First != ']')
+		{
+			//using std::vector<Value *>::push_back;
 
-	//~array()
-	//{
-	//for (Value:: this*)
-	//{
-	//delete this;
-	//}
+		}
+	}
 
 };
-Value * Parce(char * & First, char * Last)
+struct Object : Value, std::map<std::string, Value *> 
+{
+	using std::map<std::string, Value *>::map;
+	using std::map<std::string, Value *>::insert;
+
+	virtual void parse(std::string::iterator &f, std::vector<std::unique_ptr<Value>> &v, int &weight)
+	{
+
+	}
+};
+void skip(char * & First, char * Last)
 {
 	while (First != Last && std::isspace(*First))
 		++First;
