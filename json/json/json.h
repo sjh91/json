@@ -6,6 +6,7 @@
 struct Value 
 {
 	virtual ~ Value() = default;
+	//Value * Parce(char * &, char * &);
 };
 
 struct Null:Value
@@ -44,6 +45,4 @@ Value * Parce(char * & First, char * Last)
 {
 	while (First != Last && std::isspace(*First))
 		++First;
-
-
 }
