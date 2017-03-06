@@ -9,6 +9,7 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <iterator>
 #include <map>
 struct Value
 {
@@ -20,7 +21,7 @@ struct Null :Value
 {
 	Null() = default;
 
-	virtual void parse(std::string::iterator  * & First, std::vector<std::unique_ptr<Value>> &v, int & weight)
+	virtual void parse(std::string::iterator   & First, std::vector<std::unique_ptr<Value>> &v, int & weight)
 	{
 		char temp = v.size() + 1;
 		v.resize(temp);
@@ -108,14 +109,18 @@ struct Array : Value, std::vector<Value *>
 		for (Value * v : *this)
 			delete this;
 	}
+	using std::vector<Value *>::push_back;
+
 	virtual void parse(std::string::iterator  & First, std::vector<std::unique_ptr<Value>> &v, int & weight)
 	{
-		++First;
-		Array * a = new Array();
+	
 		while (*First != ']')
 		{
-			//using std::vector<Value *>::push_back;
-
+			Array * a = new Array();
+			int temp = v.size() + 1;
+			v.resize(temp);
+			v.at(temp).reset(a); //?
+			++weight;
 		}
 	}
 
@@ -125,17 +130,67 @@ struct Object : Value, std::map<std::string, Value *>
 	using std::map<std::string, Value *>::map;
 	using std::map<std::string, Value *>::insert;
 
-	virtual void parse(std::string::iterator &f, std::vector<std::unique_ptr<Value>> &v, int &weight)
+	virtual void parse(std::string::iterator &First, std::vector<std::unique_ptr<Value>> &v, int &weight)
 	{
 
 	}
 };
-void skip(char * & First, char * Last)
+void skip(std::string::iterator & First, std::string::iterator & Last)
 {
 	while (First != Last && std::isspace(*First))
 		++First;
 }
 int main()
 {
+	int weight = 0; // base weight
+	std::string fileName;
+	std::vector<std::unique_ptr<Value>> v; // holds json objects
+
+	std::cout << "Enter json text file";
+	std::cin >> fileName;
+	std::ifstream file(fileName);
 	
+	std::string text{ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
+	std::string::iterator First = text.begin();
+	std::string::iterator Last = text.end();
+	while (First != Last)
+	{
+		skip(First,Last);
+
+		if (*First == 'n') {
+			Null temp;
+			temp.parse(First, v, weight);
+			return;
+		}
+
+		else if (*First == 't' || *First == 'f') {
+			Bool temp;
+			temp.parse(First, v, weight);
+			return;
+		}
+
+		else if (*First == '"') {
+			String temp;
+			temp.parse(First, v, weight);
+			return;
+		}
+
+		else if (isdigit(*First)) {
+			Number temp;
+			temp.parse(First, v, weight);
+			return;
+		}
+
+		else if (*First == '[') {
+			Array temp;
+			temp.parse(First, v, weight);
+			return;
+		}
+
+		else if (*First == '{') {
+			Object temp;
+			temp.parse(First, v, weight);
+			return;
+		}
+	}
 }
