@@ -66,7 +66,7 @@ struct Number :Value
 			++First;
 			if (*First == '.')
 			{
-				++First;
+				++First; //?
 			}
 		}
 
@@ -160,37 +160,31 @@ int main()
 		if (*First == 'n') {
 			Null temp;
 			temp.parse(First, v, weight);
-			return;
 		}
 
 		else if (*First == 't' || *First == 'f') {
 			Bool temp;
 			temp.parse(First, v, weight);
-			return;
 		}
 
 		else if (*First == '"') {
 			String temp;
 			temp.parse(First, v, weight);
-			return;
 		}
 
 		else if (isdigit(*First)) {
 			Number temp;
 			temp.parse(First, v, weight);
-			return;
 		}
 
 		else if (*First == '[') {
 			Array temp;
 			temp.parse(First, v, weight);
-			return;
 		}
 
 		else if (*First == '{') {
 			Object temp;
 			temp.parse(First, v, weight);
-			return;
 		}
 	}
 }
