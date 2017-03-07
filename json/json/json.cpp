@@ -210,8 +210,7 @@ int main()
 	std::string::iterator First = text.begin();
 	std::string::iterator Last = text.end();
 
-	while (First != Last)
-		doParse(First, Last, & v, weight);
+	doParse(First, Last, & v, weight);
 	std::cout << "weight = " << weight;
 	
 }
