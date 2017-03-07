@@ -1,8 +1,7 @@
-// json.cpp : Defines the entry point for the console application.
-//
+// Sam Hardy
+//sjh91@uakron.edu
 
 #include "stdafx.h"
-//#include "json.h"
 #include <cctype>
 #include <string>
 #include <fstream>
@@ -14,7 +13,7 @@
 struct Value
 {
 	virtual ~Value() = default;
-	virtual void parse(std::string::iterator * & First, std::vector<std::unique_ptr<Value>> &v, int & weight);
+	virtual void parse(std::string::iterator  & First, std::vector<std::unique_ptr<Value>> &v, int & weight) {}
 };
 
 struct Null :Value
@@ -23,7 +22,7 @@ struct Null :Value
 
 	virtual void parse(std::string::iterator   & First, std::vector<std::unique_ptr<Value>> &v, int & weight)
 	{
-		char temp = v.size() + 1;
+		int temp = v.size() + 1;
 		v.resize(temp);
 		v[temp].reset(new Null());
 		First + 4; //null
@@ -40,12 +39,20 @@ struct Bool :Value
 	
 	virtual void parse(std::string::iterator  & First, std::vector<std::unique_ptr<Value>> &v, int & weight)
 	{
-		if (* First == 'T') 
+		if (* First == 't') 
 		{
-			char temp = v.size() + 1;
+			int temp = v.size() + 1;
 			v.resize(temp);
 			v[temp].reset(new Bool(true));
 			First + 4;
+			++weight;
+		}
+		else if (*First == 'f')
+		{
+			int temp = v.size() + 1;
+			v.resize(temp);
+			v[temp].reset(new Bool(false));
+			First + 5;
 			++weight;
 		}
 	}
@@ -132,13 +139,62 @@ struct Object : Value, std::map<std::string, Value *>
 
 	virtual void parse(std::string::iterator &First, std::vector<std::unique_ptr<Value>> &v, int &weight)
 	{
-
+		while (*First != '}')
+		{
+			int temp = v.size() + 1;
+			v.resize(temp);
+			v[temp].reset(new Object());
+			++First;
+			++weight;
+		}
 	}
 };
 void skip(std::string::iterator & First, std::string::iterator & Last)
 {
 	while (First != Last && std::isspace(*First))
 		++First;
+}
+void doParse(std::string::iterator  & First, std::string::iterator & Last, std::vector<std::unique_ptr<Value>> * v, int & weight) {
+	while (First != Last)
+	{
+		skip(First, Last);
+
+		if (*First == 'n') {
+			Null temp;
+			temp.parse(First, *v, weight);
+			return;
+		}
+
+		else if (*First == 't' || *First == 'f') {
+			Bool temp;
+			temp.parse(First, *v, weight);
+			return;
+		}
+
+		else if (*First == '"') {
+			String temp;
+			temp.parse(First, *v, weight);
+			return;
+		}
+
+		else if (isdigit(*First)) {
+			Number temp;
+			temp.parse(First, *v, weight);
+			return;
+		}
+
+		else if (*First == '[') {
+			Array temp;
+			temp.parse(First, *v, weight);
+			return;
+		}
+
+		else if (*First == '{') {
+			Object temp;
+			temp.parse(First, *v, weight);
+			return;
+		}
+	}
 }
 int main()
 {
@@ -153,38 +209,9 @@ int main()
 	std::string text{ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
 	std::string::iterator First = text.begin();
 	std::string::iterator Last = text.end();
+
 	while (First != Last)
-	{
-		skip(First,Last);
-
-		if (*First == 'n') {
-			Null temp;
-			temp.parse(First, v, weight);
-		}
-
-		else if (*First == 't' || *First == 'f') {
-			Bool temp;
-			temp.parse(First, v, weight);
-		}
-
-		else if (*First == '"') {
-			String temp;
-			temp.parse(First, v, weight);
-		}
-
-		else if (isdigit(*First)) {
-			Number temp;
-			temp.parse(First, v, weight);
-		}
-
-		else if (*First == '[') {
-			Array temp;
-			temp.parse(First, v, weight);
-		}
-
-		else if (*First == '{') {
-			Object temp;
-			temp.parse(First, v, weight);
-		}
-	}
+		doParse(First, Last, & v, weight);
+	std::cout << "weight = " << weight;
+	
 }
