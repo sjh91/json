@@ -10,6 +10,9 @@
 #include <memory>
 #include <iterator>
 #include <map>
+
+
+//Classes
 struct Value
 {
 	virtual ~Value() = default;
@@ -149,49 +152,50 @@ struct Object : Value, std::map<std::string, Value *>
 		}
 	}
 };
+// functions
 void skip(std::string::iterator & First, std::string::iterator & Last)
 {
 	while (First != Last && std::isspace(*First))
 		++First;
 }
-void doParse(std::string::iterator  & First, std::string::iterator & Last, std::vector<std::unique_ptr<Value>> * v, int & weight) {
+void doParse(std::string::iterator  & First, std::string::iterator & Last, std::vector<std::unique_ptr<Value>> & v, int & weight) {
 	while (First != Last)
 	{
 		skip(First, Last);
 
 		if (*First == 'n') {
 			Null temp;
-			temp.parse(First, *v, weight);
+			temp.parse(First, v, weight);
 			return;
 		}
 
 		else if (*First == 't' || *First == 'f') {
 			Bool temp;
-			temp.parse(First, *v, weight);
+			temp.parse(First, v, weight);
 			return;
 		}
 
 		else if (*First == '"') {
 			String temp;
-			temp.parse(First, *v, weight);
+			temp.parse(First, v, weight);
 			return;
 		}
 
 		else if (isdigit(*First)) {
 			Number temp;
-			temp.parse(First, *v, weight);
+			temp.parse(First, v, weight);
 			return;
 		}
 
 		else if (*First == '[') {
 			Array temp;
-			temp.parse(First, *v, weight);
+			temp.parse(First, v, weight);
 			return;
 		}
 
 		else if (*First == '{') {
 			Object temp;
-			temp.parse(First, *v, weight);
+			temp.parse(First, v, weight);
 			return;
 		}
 	}
@@ -206,11 +210,14 @@ int main()
 	std::cin >> fileName;
 	std::ifstream file(fileName);
 	
+	
 	std::string text{ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
 	std::string::iterator First = text.begin();
 	std::string::iterator Last = text.end();
-
-	doParse(First, Last, & v, weight);
+	
+	//parse
+	doParse(First, Last,  v, weight);
+	//cout weight
 	std::cout << "weight = " << weight;
 	
 }
